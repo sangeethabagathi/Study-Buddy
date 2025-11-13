@@ -102,8 +102,26 @@
             flex: 1;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
-            overflow: auto;
+            overflow-y: scroll;
             background: #f9f9f9;
+        }
+        
+        #pdfViewer::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        #pdfViewer::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        #pdfViewer::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        
+        #pdfViewer::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
         
         #pdfCanvas {
@@ -118,6 +136,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
+            min-height: 500px;
         }
         
         .assistant-header {
@@ -132,15 +151,11 @@
             margin-bottom: 5px;
         }
         
-        .placeholder-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-        }
-        
-        .placeholder-message p {
-            margin-bottom: 15px;
-            line-height: 1.6;
+        #vapiWidget {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .no-file-message {
@@ -194,16 +209,7 @@
                     <h2>🎙️ Voice Tutor</h2>
                     <p>Click the button below to start talking</p>
                 </div>
-                <div id="vapiWidget">
-                    <vapi-widget
-                        assistant-id="529f87e7-dea8-4afe-9e97-c6989bdce7af"
-                        public-key="6dec2bf2-ffc2-42e2-8087-c6476339d58e"
-                        mode="voice"
-                        theme="dark"
-                        base-bg-color="#667eea"
-                        accent-color="#764ba2"
-                    ></vapi-widget>
-                </div>
+                <div id="vapiWidget"></div>
             </div>
         </div>
     </div>
@@ -224,6 +230,7 @@
             const file = e.target.files[0];
             if (file && file.type === 'application/pdf') {
                 document.getElementById('fileName').textContent = file.name;
+                document.querySelector('.no-file-message').style.display = 'none';
                 
                 const fileReader = new FileReader();
                 fileReader.onload = function() {
@@ -231,31 +238,90 @@
                     
                     pdfjsLib.getDocument(typedArray).promise.then(function(pdf) {
                         pdfDoc = pdf;
-                        renderPage(1);
+                        renderAllPages();
                     });
                 };
                 fileReader.readAsArrayBuffer(file);
             }
         });
         
-        // Render PDF page
+        // Render all PDF pages
+        async function renderAllPages() {
+            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                await renderPage(pageNum);
+            }
+        }
+        
+        // Render single PDF page
         function renderPage(pageNum) {
-            pdfDoc.getPage(pageNum).then(function(page) {
+            return pdfDoc.getPage(pageNum).then(function(page) {
                 const viewport = page.getViewport({scale: 1.5});
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.height = viewport.height;
+                tempCanvas.width = viewport.width;
                 
                 const renderContext = {
-                    canvasContext: ctx,
+                    canvasContext: tempCtx,
                     viewport: viewport
                 };
                 
-                page.render(renderContext);
+                return page.render(renderContext).promise.then(function() {
+                    if (pageNum === 1) {
+                        canvas.height = viewport.height * pdfDoc.numPages + (pdfDoc.numPages - 1) * 20;
+                        canvas.width = viewport.width;
+                    }
+                    ctx.drawImage(tempCanvas, 0, (pageNum - 1) * (viewport.height + 20));
+                });
             });
         }
     </script>
     
     <!-- Vapi Widget Script -->
-    <script src="https://unpkg.com/@vapi-ai/client-sdk@latest/dist/embed/widget.umd.js"></script>
+    <script type="module">
+        import Vapi from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.3.2/dist/index.js';
+        
+        const vapi = new Vapi('6dec2bf2-ffc2-42e2-8087-c6476339d58e');
+        
+        const button = document.createElement('button');
+        button.id = 'vapi-btn';
+        button.textContent = 'Start Voice Call';
+        button.style.cssText = `
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+        `;
+        
+        button.onmouseover = () => {
+            button.style.transform = 'scale(1.05)';
+            button.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+        };
+        
+        button.onmouseout = () => {
+            button.style.transform = 'scale(1)';
+            button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+        };
+        
+        button.onclick = async () => {
+            if (vapi.status === 'call-in-progress') {
+                await vapi.stop();
+                button.textContent = 'Start Voice Call';
+                button.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            } else {
+                await vapi.start('529f87e7-dea8-4afe-9e97-c6989bdce7af');
+                button.textContent = 'End Voice Call';
+                button.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+            }
+        };
+        
+        document.getElementById('vapiWidget').appendChild(button);
+    </script>
 </body>
 </html>
