@@ -4,175 +4,162 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study Buddy Tutor - Interactive Learning</title>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         .header {
             text-align: center;
             color: white;
             padding: 30px 20px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
-        
+
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
         }
-        
+
         .header p {
             font-size: 1.2em;
             opacity: 0.9;
         }
-        
+
         .main-content {
-            display: grid;
-            grid-template-columns: 1fr 400px;
+            display: flex;
             gap: 20px;
-            height: calc(100vh - 250px);
+            margin-bottom: 20px;
         }
-        
-        .pdf-viewer-section {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .upload-section {
-            margin-bottom: 15px;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 10px;
-        }
-        
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-        
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: -9999px;
-        }
-        
-        .file-input-label {
-            background: #667eea;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: inline-block;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .file-input-label:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-        }
-        
-        .file-name {
-            margin-left: 15px;
-            color: #333;
-            font-weight: 500;
-        }
-        
-        #pdfViewer {
+
+        .pdf-section {
             flex: 1;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            overflow-y: scroll;
-            background: #f9f9f9;
-        }
-        
-        #pdfViewer::-webkit-scrollbar {
-            width: 12px;
-        }
-        
-        #pdfViewer::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        #pdfViewer::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-        
-        #pdfViewer::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        
-        #pdfCanvas {
-            display: block;
-            margin: 0 auto;
-        }
-        
-        .voice-assistant-section {
             background: white;
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            min-height: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        
-        .assistant-header {
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
             text-align: center;
             margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e0e0e0;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
         }
-        
-        .assistant-header h2 {
-            color: #667eea;
-            margin-bottom: 5px;
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
         }
-        
-        #vapiWidget {
-            flex: 1;
+
+        .upload-area input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .upload-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .pdf-viewer-container {
+            width: 100%;
+            height: 600px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #f9f9f9;
+            display: none;
+        }
+
+        .pdf-viewer-container.active {
+            display: block;
+        }
+
+        .pdf-page {
+            margin: 10px auto;
+            display: block;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .voice-section {
+            flex: 0 0 400px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
         }
-        
-        .no-file-message {
+
+        .voice-header {
             text-align: center;
-            padding: 50px 20px;
-            color: #999;
+            margin-bottom: 20px;
         }
-        
-        @media (max-width: 1024px) {
+
+        .voice-header h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        #vapi-container {
+            flex: 1;
+            min-height: 500px;
+        }
+
+        .info-box {
+            background: #f0f2ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            list-style-position: inside;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 968px) {
             .main-content {
-                grid-template-columns: 1fr;
-                height: auto;
+                flex-direction: column;
             }
             
-            .pdf-viewer-section,
-            .voice-assistant-section {
-                height: 500px;
+            .voice-section {
+                flex: 1;
             }
         }
     </style>
@@ -180,148 +167,129 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎓 Study Buddy Tutor</h1>
-            <p>Interactive AI Homework Help with Document Support</p>
+            <h1>📚 Study Buddy Tutor</h1>
+            <p>Upload your lesson materials and start learning with voice interaction</p>
         </div>
-        
+
         <div class="main-content">
-            <div class="pdf-viewer-section">
-                <div class="upload-section">
-                    <div class="file-input-wrapper">
-                        <label for="pdfInput" class="file-input-label">
-                            📄 Upload Homework or Lesson PDF
-                        </label>
-                        <input type="file" id="pdfInput" accept=".pdf" />
-                    </div>
-                    <span class="file-name" id="fileName">No file selected</span>
+            <div class="pdf-section">
+                <div class="upload-area">
+                    <h2 style="color: #667eea; margin-bottom: 15px;">📄 Upload Your Lesson Materials</h2>
+                    <p style="margin-bottom: 20px; color: #666;">Upload PDF, images, or text files to study</p>
+                    <label for="fileInput" class="upload-btn">Choose File</label>
+                    <input type="file" id="fileInput" accept=".pdf,image/*,.txt">
+                    <p id="fileName" style="margin-top: 15px; color: #667eea; font-weight: 600;"></p>
                 </div>
-                <div id="pdfViewer">
-                    <div class="no-file-message">
-                        <p>👆 Upload a PDF to view it here</p>
-                        <p>Your tutor can reference the document during your conversation!</p>
-                    </div>
-                    <canvas id="pdfCanvas"></canvas>
-                </div>
+                <div id="pdfViewer" class="pdf-viewer-container"></div>
             </div>
-            
-            <div class="voice-assistant-section">
-                <div class="assistant-header">
-                    <h2>🎙️ Voice Tutor</h2>
-                    <p>Click the button below to start talking</p>
+
+            <div class="voice-section">
+                <div class="voice-header">
+                    <h2>🎤 Voice Tutor</h2>
+                    <p style="color: #666;">Talk with your AI tutor</p>
                 </div>
-                <div id="vapiWidget"></div>
+                <div id="vapi-container"></div>
+                
+                <div class="info-box">
+                    <h3>📖 What I Can Help With:</h3>
+                    <ul>
+                        <li>High School: All subjects</li>
+                        <li>College: Math courses</li>
+                        <li>Step-by-step guidance</li>
+                        <li>Homework review</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
-    
-    <!-- PDF.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
     <script>
-        // Set PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
         let pdfDoc = null;
-        let currentPage = 1;
-        const canvas = document.getElementById('pdfCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Handle file upload
-        document.getElementById('pdfInput').addEventListener('change', function(e) {
+
+        // File upload handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            if (file && file.type === 'application/pdf') {
-                document.getElementById('fileName').textContent = file.name;
-                document.querySelector('.no-file-message').style.display = 'none';
+            if (file) {
+                document.getElementById('fileName').textContent = `Selected: ${file.name}`;
                 
-                const fileReader = new FileReader();
-                fileReader.onload = function() {
-                    const typedArray = new Uint8Array(this.result);
-                    
-                    pdfjsLib.getDocument(typedArray).promise.then(function(pdf) {
-                        pdfDoc = pdf;
-                        renderAllPages();
-                    });
-                };
-                fileReader.readAsArrayBuffer(file);
+                if (file.type === 'application/pdf') {
+                    loadPDF(file);
+                }
             }
         });
-        
+
+        // Load and render PDF
+        async function loadPDF(file) {
+            const fileReader = new FileReader();
+            
+            fileReader.onload = async function(e) {
+                const typedArray = new Uint8Array(e.target.result);
+                
+                try {
+                    pdfDoc = await pdfjsLib.getDocument(typedArray).promise;
+                    document.getElementById('pdfViewer').classList.add('active');
+                    renderAllPages();
+                } catch (error) {
+                    console.error('Error loading PDF:', error);
+                    alert('Error loading PDF. Please try again.');
+                }
+            };
+            
+            fileReader.readAsArrayBuffer(file);
+        }
+
         // Render all PDF pages
         async function renderAllPages() {
+            const viewer = document.getElementById('pdfViewer');
+            viewer.innerHTML = '';
+            
             for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
                 await renderPage(pageNum);
             }
         }
-        
+
         // Render single PDF page
-        function renderPage(pageNum) {
-            return pdfDoc.getPage(pageNum).then(function(page) {
-                const viewport = page.getViewport({scale: 1.5});
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCanvas.height = viewport.height;
-                tempCanvas.width = viewport.width;
-                
-                const renderContext = {
-                    canvasContext: tempCtx,
-                    viewport: viewport
-                };
-                
-                return page.render(renderContext).promise.then(function() {
-                    if (pageNum === 1) {
-                        canvas.height = viewport.height * pdfDoc.numPages + (pdfDoc.numPages - 1) * 20;
-                        canvas.width = viewport.width;
-                    }
-                    ctx.drawImage(tempCanvas, 0, (pageNum - 1) * (viewport.height + 20));
-                });
-            });
+        async function renderPage(pageNum) {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({scale: 1.5});
+            
+            const canvas = document.createElement('canvas');
+            canvas.className = 'pdf-page';
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+            
+            await page.render(renderContext).promise;
+            document.getElementById('pdfViewer').appendChild(canvas);
         }
     </script>
-    
+
     <!-- Vapi Widget Script -->
-    <script type="module">
-        import Vapi from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.3.2/dist/index.js';
-        
-        const vapi = new Vapi('6dec2bf2-ffc2-42e2-8087-c6476339d58e');
-        
-        const button = document.createElement('button');
-        button.id = 'vapi-btn';
-        button.textContent = 'Start Voice Call';
-        button.style.cssText = `
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 20px 40px;
-            font-size: 18px;
-            font-weight: 600;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s;
-        `;
-        
-        button.onmouseover = () => {
-            button.style.transform = 'scale(1.05)';
-            button.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
-        };
-        
-        button.onmouseout = () => {
-            button.style.transform = 'scale(1)';
-            button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
-        };
-        
-        button.onclick = async () => {
-            if (vapi.status === 'call-in-progress') {
-                await vapi.stop();
-                button.textContent = 'Start Voice Call';
-                button.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            } else {
-                await vapi.start('529f87e7-dea8-4afe-9e97-c6989bdce7af');
-                button.textContent = 'End Voice Call';
-                button.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+    <script>
+        (function(d, t) {
+            var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+            v.onload = function() {
+                window.vapiSDK.run({
+                    apiKey: "4c3d4fb4-ca15-4b15-aaa7-46f23deaa52c",
+                    assistant: "529f87e7-dea8-4afe-9e97-c6989bdce7af",
+                    config: {
+                        mode: "voice"
+                    }
+                });
             }
-        };
-        
-        document.getElementById('vapiWidget').appendChild(button);
+            v.src = "https://cdn.vapi.ai/js/widget.js";
+            v.type = "text/javascript";
+            v.async = true;
+            s.parentNode.insertBefore(v, s);
+        })(document, 'script');
     </script>
 </body>
 </html>
