@@ -192,76 +192,16 @@
         }
     </script>
 
-    <!-- Vapi Widget with PDF Context -->
-<div id="vapiButton" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
-    <button id="startCallBtn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 50px; padding: 15px 25px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 20px;">🎤</span>
-        <span>Talk with AI</span>
-    </button>
-</div>
+    <!-- Vapi Widget -->
+<vapi-widget
+    public-key="6dec2bf2-ffc2-42e2-8087-c6476339d58e"
+    assistant-id="529f87e7-dea8-4afe-9e97-c6989bdce7af"
+    mode="voice"
+    theme="dark"
+    base-bg-color="#000000"
+    accent-color="#14B8A6"
+></vapi-widget>
+<script src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js"></script>
 
-<script type="module">
-    import Vapi from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.3/dist/index.js';
-    
-    const vapi = new Vapi('6dec2bf2-ffc2-42e2-8087-c6476339d58e');
-    const startCallBtn = document.getElementById('startCallBtn');
-    let isCallActive = false;
-    
-    startCallBtn.addEventListener('click', async () => {
-        if (!isCallActive) {
-            try {
-                // Prepare metadata with PDF content
-                const metadata = {};
-                if (pdfTextContent && pdfTextContent.trim()) {
-                    metadata.lessonMaterial = pdfTextContent;
-                    console.log('Starting call with PDF context:', pdfTextContent.substring(0, 200));
-                }
-                
-                // Start the call with assistant ID and metadata
-                await vapi.start({
-                    assistantId: '529f87e7-dea8-4afe-9e97-c6989bdce7af',
-                    metadata: metadata
-                });
-                
-                startCallBtn.innerHTML = '<span style="font-size: 20px;">⏸️</span><span>End Call</span>';
-                startCallBtn.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
-                isCallActive = true;
-            } catch (error) {
-                console.error('Error starting call:', error);
-                alert('Error starting voice call. Please try again.');
-            }
-        } else {
-            vapi.stop();
-            startCallBtn.innerHTML = '<span style="font-size: 20px;">🎤</span><span>Talk with AI</span>';
-            startCallBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            isCallActive = false;
-        }
-    });
-    
-    // Listen for call events
-    vapi.on('call-start', () => {
-        console.log('Call started');
-        if (pdfTextContent && pdfTextContent.trim()) {
-            // Send an initial message with the PDF context
-            vapi.send({
-                type: 'add-message',
-                message: {
-                    role: 'system',
-                    content: `The student has uploaded a lesson document. Here is the content:\n\n${pdfTextContent}`
-                }
-            });
-        }
-    });
-    
-    vapi.on('call-end', () => {
-        console.log('Call ended');
-        startCallBtn.innerHTML = '<span style="font-size: 20px;">🎤</span><span>Talk with AI</span>';
-        startCallBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        isCallActive = false;
-    });
-    
-    vapi.on('error', (error) => {
-        console.error('Vapi error:', error);
-    });
-</script>dy>
+</body>
 </html>
