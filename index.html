@@ -188,7 +188,24 @@
                     <h2>🎤 Voice Tutor</h2>
                     <p style="color: #666;">Talk with your AI tutor</p>
                 </div>
-                <div id="vapi-container"></div>
+                <div id="vapi-container">
+                    <button id="startVoiceBtn" style="
+                        display: block;
+                        margin: 40px auto;
+                        padding: 20px 40px;
+                        font-size: 1.2em;
+                        font-weight: 600;
+                        color: white;
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        border: none;
+                        border-radius: 50px;
+                        cursor: pointer;
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                        🎤 Start Voice Call
+                    </button>
+    <div id="callStatus" style="text-align: center; margin-top: 20px; color: #667eea; font-weight: 600;"></div>
+</div>
+<div id="vapi-container"></div>
                 
                 <div class="info-box">
                     <h3>📖 What I Can Help With:</h3>
@@ -291,5 +308,34 @@
             s.parentNode.insertBefore(v, s);
         })(document, 'script');
     </script>
+    <script>
+// Button click handler for voice call
+document.getElementById('startVoiceBtn').addEventListener('click', function() {
+    const button = this;
+    const status = document.getElementById('callStatus');
+    
+    button.disabled = true;
+    button.textContent = 'Connecting...';
+    status.textContent = 'Starting voice call...';
+    
+    // Use Vapi SDK to start call
+    if (window.vapiSDK) {
+        window.vapiSDK.run({
+            apiKey: "4c3d4fb4-ca15-4b15-aaa7-46f23deaa52c",
+            assistant: "529f87e7-dea8-4afe-9e97-c6989bdce7af",
+            config: {
+                mode: "voice"
+            }
+        });
+        status.textContent = 'Connected! Speak with your tutor';
+        button.textContent = '✓ Call Active';
+    } else {
+        status.textContent = 'Error loading voice service';
+        button.disabled = false;
+        button.textContent = '🎤 Start Voice Call';
+    }
+});
+</script>
+
 </body>
 </html>
